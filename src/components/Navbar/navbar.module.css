@@ -1,0 +1,39 @@
+.navbar{
+  width: 100%;
+  box-shadow: -3px -3px 7px #ffffff,
+  3px 3px 5px #ceced1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background-color: rgb(66, 66, 128);
+  color: rgb(246, 251, 255);
+}
+
+.navbar {
+  color: whitesmoke;
+}
+
+.navbar ul{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+}
+
+.navbar ul .navLink{
+  margin-left: 15px;
+  text-decoration: none;
+  font-weight: 400;
+  color: whitesmoke;
+  font-weight: 500;
+}
+
+.logoutBtn{
+  border: none;
+  border-radius: 5px;
+  color: whitesmoke;
+  background-color:  rgb(196, 51, 51);
+  font-weight: bold;
+  padding: 10px;
+  cursor: pointer;
+}

@@ -1,13 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Added 'Router' alias
 
-import AdminDashboard from "./Routes/dashboard"; // Corrected component name to start with uppercase
+import AdminDashboard from "./Routes/dashboard";
+import LoginPage from "./Routes/loginPage";
 
 function App() {
   return (
-    <Router> {/* Changed 'Routes' to 'Router' */}
+    <Router> 
       <Routes>
-        <Route path="/" element={<AdminDashboard />} /> {/* Corrected component name to start with uppercase */}
+        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/loginPage" element={<LoginPage/>} />
       </Routes>
     </Router>
   );
