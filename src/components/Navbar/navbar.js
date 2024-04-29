@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './navbar.module.css'; // Import CSS module styles
 
-const Navbar = () => {
+const Navbar = ({totalRecords}) => {
   const handleLogout = () => {
     // Clear token from localStorage
     localStorage.removeItem('accessToken'); // Assuming you store the token in localStorage
@@ -23,7 +23,8 @@ const Navbar = () => {
           <Link to="/" className={styles.navLink}>Dashboard</Link> {/* Apply className from CSS module */}
         </li>
         <li>
-          <Link to="/records" className={styles.navLink}>Records</Link> {/* Apply className from CSS module */}
+            {/* Pass totalRecords as a parameter in the URL */}
+            <Link to="/recordsNb" state= { totalRecords }  className={styles.navLink}>Records ({totalRecords})</Link> 
         </li>
       </ul>
         <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button> {/* Apply className from CSS module */}

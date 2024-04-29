@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import styles from './dashbord.module.css';
+import Navbar from '../Navbar/navbar';
 
 const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
   const [originalProductData, setOriginalProductData] = useState({});
+  const [totalRecords, setTotalRecords] = useState(0);
   const [formData, setFormData] = useState({
     name: '',
     image: '',
@@ -19,6 +21,8 @@ const Dashboard = () => {
       try {
         const response = await axios.get('http://localhost:4000/api/product');
         setProducts(response.data);
+        setTotalRecords(response.data.length); // Update total records
+        console.log(totalRecords);
       } catch (error) {
         console.error('Error fetching products: ', error);
       }
@@ -80,6 +84,7 @@ const Dashboard = () => {
           .then(response => {
             console.log('Record deleted successfully');
             setProducts(products.filter(product => product._id !== id));
+            setTotalRecords(totalRecords - 1); // Update total records on deletion
             Swal.fire('Deleted!', 'Your record has been deleted.', 'success');
           })
           .catch(error => {
@@ -113,6 +118,7 @@ const Dashboard = () => {
       setProducts([...products, response.data]);
       Swal.fire('Success!', 'Product added successfully.', 'success');
       setFormData({ name: '', image: '', description: '', price: '' });
+      setTotalRecords(totalRecords + 1); // Update total records on insertion
     } catch (error) {
       console.error('Error adding product:', error);
       Swal.fire('Error!', 'An error occurred while adding the product.', 'error');
@@ -121,6 +127,7 @@ const Dashboard = () => {
 
   return (
     <>
+    <Navbar totalRecords={totalRecords}/>  {/* Pass totalRecords as prop */}
     <h1>Admin's Dashboard</h1>
     <div className={styles.dashboard}> {/* Apply className from CSS module */}
       <div className={styles.formContainer} > {/* Apply className from CSS module */}
@@ -184,7 +191,12 @@ const Dashboard = () => {
                         onChange={(e) => handleInputChange(e, 'image', product._id)}
                       />
                     ) : (
-                      <img src={`http://localhost:4000/uploads/${product.image}`} alt="Product Image" style={{ width: '100px', height: '100px' }} />
+                      <img
+                      src={`http://localhost:4000/uploads/${product.image}`}
+                      alt="Image"
+                      className={styles.imageStyle}
+                      crossOrigin="anonymous"
+                  />
                     )}
                 </td>
                 <td>
@@ -212,6 +224,7 @@ const Dashboard = () => {
                 <td className={styles.actions}> {/* Apply className from CSS module */}
                   {editingProduct === product._id ? (
                     <>
+
                       <button onClick={() => handleSave(product._id)} className={styles.saveButton}>Save</button>
                       <button onClick={handleCancelEdit} className={styles.cancelButton}>Cancel</button>
                     </>
