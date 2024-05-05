@@ -6,9 +6,7 @@ import styles from './dashbord.module.css';
 import Navbar from '../Navbar/navbar';
 import { setDataFetched } from '../../Redux/dataFetchedSlice';
 import { setProducts } from '../../Redux/productSlice';
-import { useNavigate } from 'react-router-dom'; 
-import { useAuthContext } from '../../hooks/useAuthContext';
-import {jwtDecode} from 'jwt-decode';
+
 
 const Dashboard = () => {
 
