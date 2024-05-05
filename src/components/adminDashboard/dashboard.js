@@ -1,34 +1,62 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import styles from './dashbord.module.css';
 import Navbar from '../Navbar/navbar';
+import { setDataFetched } from '../../Redux/dataFetchedSlice';
+import { setProducts } from '../../Redux/productSlice';
+import { useNavigate } from 'react-router-dom'; 
+import { useAuthContext } from '../../hooks/useAuthContext';
+import {jwtDecode} from 'jwt-decode';
 
 const Dashboard = () => {
-  const [products, setProducts] = useState([]);
+
+  const dispatch = useDispatch();
+  const dataFetched = useSelector(state => state.dataFetched.fetched);
   const [editingProduct, setEditingProduct] = useState(null);
   const [originalProductData, setOriginalProductData] = useState({});
   const [totalRecords, setTotalRecords] = useState(0);
-  const [formData, setFormData] = useState({
-    name: '',
-    image: '',
-    description: '',
-    price: ''
-  });
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
 
-  useEffect(() => {
-    const fetchAllProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:4000/api/product');
-        setProducts(response.data);
-        setTotalRecords(response.data.length); // Update total records
-        console.log(totalRecords);
-      } catch (error) {
-        console.error('Error fetching products: ', error);
+
+  const products = useSelector(state => state.products);
+  const userInfo = localStorage.getItem('userInfo');
+  const userAccess = JSON.parse(userInfo);
+  //const userAccess = { accessToken: "invalidToken" }; // Mocking an incorrect access token
+  console.log("user info : " , userAccess.accessToken);
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      if (!products.length) { // Check if products are not fetched yet
+        const response = await axios.get('http://localhost:4000/api/product', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${userAccess.accessToken}`
+          }
+        });
+        dispatch(setProducts(response.data));
+        setTotalRecords(response.data.length)
+        console.log('Products fetched from API:', response.data);
       }
-    };
-    fetchAllProducts();
-  }, []);
+      dispatch(setDataFetched(true));
+    } catch (error) {
+      console.error('Error fetching products: ', error);
+    }
+  };
+
+  if (!dataFetched) {
+    console.log('Fetching data...');
+    fetchData();
+  } else {
+    setTotalRecords(products.length)
+    console.log('Data already fetched.');
+  }
+}, [dataFetched, dispatch, products.length, userAccess, userAccess.accessToken]);
 
   const handleInputChange = (e, field, id) => {
     const updatedProducts = products.map(product => {
@@ -37,7 +65,7 @@ const Dashboard = () => {
       }
       return product;
     });
-    setProducts(updatedProducts);
+    dispatch(setProducts(updatedProducts));
   };
 
   const handleSave = async (id) => {
@@ -83,7 +111,7 @@ const Dashboard = () => {
         axios.delete(`http://localhost:4000/api/product/${id}`)
           .then(response => {
             console.log('Record deleted successfully');
-            setProducts(products.filter(product => product._id !== id));
+            dispatch(setProducts(products.filter(product => product._id !== id)));
             setTotalRecords(totalRecords - 1); // Update total records on deletion
             Swal.fire('Deleted!', 'Your record has been deleted.', 'success');
           })
@@ -95,29 +123,16 @@ const Dashboard = () => {
     });
   };
 
-  const handleFormInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setFormData({ ...formData, image: file });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('price', formData.price);
-      formDataToSend.append('image', formData.image);
-
-      const response = await axios.post('http://localhost:4000/api/product', formDataToSend);
-      setProducts([...products, response.data]);
+      const response = await axios.post('http://localhost:4000/api/product',  { name, description, price });
+      dispatch(setProducts([...products, response.data]));
       Swal.fire('Success!', 'Product added successfully.', 'success');
-      setFormData({ name: '', image: '', description: '', price: '' });
+      // Clear input fields after successful submission
+      setName('');
+      setDescription('');
+      setPrice('');
       setTotalRecords(totalRecords + 1); // Update total records on insertion
     } catch (error) {
       console.error('Error adding product:', error);
@@ -135,22 +150,17 @@ const Dashboard = () => {
         <form onSubmit={handleSubmit} className={styles.gridForm}>
             <div className={styles.formGroup}>
               <label htmlFor="name" className={styles.formLabel}>Name:</label>
-              <input className={styles.formInput} type="text" id="name" name="name" value={formData.name} onChange={handleFormInputChange} required />
-            </div>
-            
-            <div className={styles.formGroup}>
-              <label htmlFor="image" className={styles.formLabel}>Image:</label>
-              <input className={styles.formInput} type="file" id="image" name="image" onChange={handleImageChange} required />
+              <input className={styles.formInput} type="text" id="name" name="name" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
 
             <div className={styles.formGroup}>
               <label htmlFor="description" className={styles.formLabel}>Description:</label>
-              <input className={styles.formInput} type="text" id="description" name="description" value={formData.description} onChange={handleFormInputChange} required />
+              <input className={styles.formInput} type="text" id="description" name="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
             </div>
             
             <div className={styles.formGroup}>
               <label htmlFor="price" className={styles.formLabel}>Price:</label>
-              <input className={styles.formInput} type="number" id="price" name="price" value={formData.price} onChange={handleFormInputChange} required />
+              <input className={styles.formInput} type="number" id="price" name="price" value={price} onChange={(e) => setPrice(e.target.value)} required />
             </div>
             
             <button type="submit" className={styles.submitButton}>Add Product</button>
@@ -163,14 +173,13 @@ const Dashboard = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Image</th>
               <th>Description</th>
               <th>Price</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product, productIndex) => (
+            {products && products.map((product, productIndex) => (
               <tr key={productIndex}>
                 <td>
                   {editingProduct === product._id ? (
@@ -183,22 +192,7 @@ const Dashboard = () => {
                     product.name
                   )}
                 </td>
-                <td>
-                    {editingProduct === product._id ? (
-                      <input
-                        type="text"
-                        value={product.image}
-                        onChange={(e) => handleInputChange(e, 'image', product._id)}
-                      />
-                    ) : (
-                      <img
-                      src={`http://localhost:4000/uploads/${product.image}`}
-                      alt="Image"
-                      className={styles.imageStyle}
-                      crossOrigin="anonymous"
-                  />
-                    )}
-                </td>
+               
                 <td>
                   {editingProduct === product._id ? (
                     <input

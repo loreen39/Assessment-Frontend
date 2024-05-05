@@ -5,12 +5,10 @@ import styles from './navbar.module.css'; // Import CSS module styles
 const Navbar = ({totalRecords}) => {
   const handleLogout = () => {
     // Clear token from localStorage
-    localStorage.removeItem('accessToken'); // Assuming you store the token in localStorage
+    localStorage.removeItem('userInfo');
     
     // Redirect the user to the login page or home page
     window.location.href = '/loginPage'; // Redirect to the login page
-    
-    // Optionally, you can perform additional cleanup or tasks here
     
     console.log('Logged out');
   };
@@ -24,7 +22,7 @@ const Navbar = ({totalRecords}) => {
         </li>
         <li>
             {/* Pass totalRecords as a parameter in the URL */}
-            <Link to="/recordsNb" state= { totalRecords }  className={styles.navLink}>Records ({totalRecords})</Link> 
+            <Link to="/recordsNb" state= { totalRecords }  className={styles.navLink}>Records</Link> 
         </li>
       </ul>
         <button onClick={handleLogout} className={styles.logoutBtn}>Logout</button> {/* Apply className from CSS module */}

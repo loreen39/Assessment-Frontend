@@ -19,38 +19,46 @@ const LoginForm = () => {
     event.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:4000/api/login', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ username, password })
-      });
+        const response = await fetch('http://localhost:4000/api/logger/login', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
 
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
+        if (!response.ok) {
+            throw new Error('Login failed');
+        }
 
-      // Redirect or show success message
-      Swal.fire({
-        icon: 'success',
-        title: 'Login Successful!',
-        showConfirmButton: false,
-        timer: 1500
-      });
+        const data = await response.json();
 
-      // redirect the user to another page upon successful login
-       window.location.href = '/';
+        // Store authentication info in localStorage
+        localStorage.setItem('userInfo', JSON.stringify(data));
+        const user = localStorage.getItem('userInfo');
+        console.log("Test " , user);
+
+        // Redirect or show success message
+        Swal.fire({
+            icon: 'success',
+            title: 'Login Successful!',
+            showConfirmButton: false,
+            timer: 1500
+        });
+
+        // redirect the user to another page upon successful login
+        window.location.href = '/';
     } catch (error) {
-      // Handle login error
-      console.error('Login error:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Login Failed',
-        text: 'Please check your username and password'
-      });
+        // Handle login error
+        console.error('Login error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: 'Please check your username and password'
+        });
     }
-  };
+};
+
 
   return (
     <div className={styles.formContainer}>
